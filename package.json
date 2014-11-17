@@ -1,0 +1,30 @@
+{
+  "name": "build-your-own-angular",
+  "version": "1.0.0",
+  "description": "following along with a book",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tgrrtt/build-your-own-angular.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tgrrtt/build-your-own-angular/issues"
+  },
+  "homepage": "https://github.com/tgrrtt/build-your-own-angular",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-jasmine": "^0.8.1",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-testem": "^0.5.16",
+    "grunt-contrib-watch": "^0.6.1"
+  },
+  "dependencies": {
+    "jquery": "^2.1.1",
+    "lodash": "^2.4.1"
+  }
+}

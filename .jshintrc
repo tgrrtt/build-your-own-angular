@@ -1,0 +1,14 @@
+{
+  "undef"         : false,
+  "unused"        : false,
+  "strict"        : true,
+  "globals" : {
+    "jasmine": true,
+    "expect": true,
+    "_": true,
+    "$": true,
+    "beforeEach": true,
+    "it": true,
+    "describe": true
+  }
+}
