@@ -124,4 +124,46 @@ describe("digest", function() {
     scope.$digest();
     expect(scope.initial).toBe('B.');
   });
+
+  it("gives up on watches after 10 iterations", function() {
+    scope.counterA = 0;
+    scope.counterB = 0;
+
+    scope.$watch(
+      function(scope) { return scope.counterA; },
+      function(newValue, oldValue, scope) {
+        scope.counterB++;
+      }
+    );
+
+    scope.$watch(
+      function(scope) { return scope.counterB; },
+      function(newValue, oldValue, scopeA) {
+        scope.counterA++;
+      }
+    );
+
+    expect((function(){ scope.$digest();})).toThrow();
+  });
+  it("ends the digest when the last watch is clean", function() {
+
+    scope.array = _.range(100);
+    var watchExecutions = 0;
+    _.times(100,function(i) {
+      scope.$watch(
+        function(scope) {
+          watchExecutions++;
+          return scope.array[i];
+        },
+        function(newValue, oldValue, scope) {
+
+        }
+      );
+    });
+    scope.$digest();
+    expect(watchExecutions).toBe(200);
+    scope.array[0] = 420;
+    scope.$digest();
+    expect(watchExecutions).toBe(301);
+  });
 });

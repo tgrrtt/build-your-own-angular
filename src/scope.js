@@ -5,6 +5,7 @@ function initWatchVal() {}
 
 function Scope() {
   this.$$watchers = [];
+  this.$$lastDirtyWatch = null;
 }
 
 // Takes a watchFn, which takes the scope and returns a property of that scope
@@ -31,6 +32,7 @@ Scope.prototype.$$digestOnce = function() {
     oldValue = watcher.last;
     // dirty check
     if (newValue !== oldValue) {
+      self.$$lastDirtyWatch = watcher;
       watcher.last = newValue;
       watcher.listenerFn(newValue,
         // if the old value is init watch value, return the new value (actual orignal value)
@@ -38,14 +40,21 @@ Scope.prototype.$$digestOnce = function() {
         (oldValue === initWatchVal ? newValue : oldValue),
         self);
       dirty = true;
+    } else if (self.$$lastDirtyWatch === watcher) {
+      return false;
     }
   });
   return dirty;
 };
 
 Scope.prototype.$digest = function() {
+  var ttl = 10;
   var dirty;
+  this.$$lastDirtyWatch = null;
   do {
     dirty = this.$$digestOnce();
+    if (dirty && !(ttl--)) {
+      throw "10 digest iterations reached";
+    }
   } while (dirty);
 };
