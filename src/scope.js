@@ -12,7 +12,7 @@ function Scope() {
 Scope.prototype.$watch = function(watchFn, listenerFn) {
   var watcher = {
     watchFn: watchFn,
-    listenerFn: listenerFn,
+    listenerFn: listenerFn || function() {},
     last: initWatchVal
   };
 
@@ -22,9 +22,9 @@ Scope.prototype.$watch = function(watchFn, listenerFn) {
 
 // digest runs through all watchers
 // checks their values, and calls the listenerFn if there are changes, or its the first time run.
-Scope.prototype.$digest = function() {
+Scope.prototype.$$digestOnce = function() {
   var self = this;
-  var newValue, oldValue;
+  var newValue, oldValue, dirty;
 
   _.forEach(this.$$watchers, function(watcher) {
     newValue = watcher.watchFn(self);
@@ -37,6 +37,15 @@ Scope.prototype.$digest = function() {
         // this keeps us from sending initWatchVal out of the scope
         (oldValue === initWatchVal ? newValue : oldValue),
         self);
+      dirty = true;
     }
   });
+  return dirty;
+};
+
+Scope.prototype.$digest = function() {
+  var dirty;
+  do {
+    dirty = this.$$digestOnce();
+  } while (dirty);
 };
