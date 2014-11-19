@@ -79,3 +79,9 @@ Scope.prototype.$$areEqual = function(newValue, oldValue, valueEq) {
         isNaN(newValue) && isNaN(oldValue));
   }
 };
+
+
+// eval allows you to execute a function with the scope passed in as an argument
+Scope.prototype.$eval = function(expr, locals) {
+  return expr(this, locals);
+};
