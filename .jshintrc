@@ -5,6 +5,7 @@
   "globals" : {
     "jasmine": true,
     "expect": true,
+    "window": true,
     "_": true,
     "$": true,
     "beforeEach": true,
