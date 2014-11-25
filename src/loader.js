@@ -15,7 +15,12 @@ function setupModuleLoader(window) {
     }
     var moduleInstance = {
       name: name,
-      requires: requires
+      requires: requires,
+      constant: function(key, value) {
+        moduleInstance._invokeQueue.push(['constant', [key, value]]);
+      },
+      // essentially a task list to be run through when loaded
+      _invokeQueue: []
     };
     modules[name] = moduleInstance;
     return moduleInstance;
