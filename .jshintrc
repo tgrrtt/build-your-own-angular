@@ -10,6 +10,7 @@
     "$": true,
     "beforeEach": true,
     "it": true,
+    "xit": true,
     "describe": true
   }
 }

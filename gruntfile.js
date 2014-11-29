@@ -22,7 +22,7 @@ module.exports = function(grunt) {
         options: {
           framework: 'jasmine2',
           launch_in_dev: ['PhantomJS'],
-          before_tests: 'grunt jshint',
+          // before_tests: 'grunt jshint',
           serve_files: [
             'node_modules/lodash/lodash.js',
             'node_modules/jquery/dist/jquery.js',
