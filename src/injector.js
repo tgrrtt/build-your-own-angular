@@ -6,11 +6,13 @@ function createInjector(modulesToLoad) {
   var providerCache = {};
   var instanceCache = {};
   var loadedModules = {};
+  var path = [];
   // used to parse out params from the function 
   var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
   // used to strip whitespace from stripped args
   var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
   var STRIP_COMMENTS = /(\/\/.*$)|(\/\*.*?\*\/)/mg;
+  var INSTANTIATING = { };
   // stores key value pairs in the cashe
   // all this stuff comes from the module's invokeQueue
   var $provide = {
@@ -33,13 +35,29 @@ function createInjector(modulesToLoad) {
   // this means that if we never get it, or ask for it in another module, it wont get instantiated 
   function getService(name) {
     if (instanceCache.hasOwnProperty(name)) {
+      if (instanceCache[name] === INSTANTIATING) {
+        throw new Error('Circular dependency found: ' +
+          name + ' <- ' + path.join(' <- '));
+      }
       return instanceCache[name];
     } else if (providerCache.hasOwnProperty(name + 'Provider')) {
-      var provider = providerCache[name + 'Provider'];
-      // note: original versino does not provide provider as self (2nd argument)
-      // pg 366
-      var instance = instanceCache[name] = invoke(provider.$get, provider);
-      return instance;
+      path.unshift(name);
+      instanceCache[name] = INSTANTIATING;
+      // this whole try finally block lets us delete INSTANTIATING on a failed instantiation
+      // this makes it so next time we try it doesnt still think its in a circular dep loop
+      try {
+        var provider = providerCache[name + 'Provider'];
+        // note: original versino does not provide provider as self (2nd argument)
+        // pg 366
+        var instance = instanceCache[name] = invoke(provider.$get, provider);
+        return instance;
+      } finally {
+        path.shift();
+        // basically reset intanceCache to not be INSTANTIATING on failure
+        if (instanceCache[name] === INSTANTIATING) {
+          delete instanceCache[name];
+        }
+      }
     }
   }
   // invoke function by looking up items in $inject from the cache
