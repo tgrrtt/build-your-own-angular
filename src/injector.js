@@ -36,7 +36,10 @@ function createInjector(modulesToLoad) {
       return instanceCache[name];
     } else if (providerCache.hasOwnProperty(name + 'Provider')) {
       var provider = providerCache[name + 'Provider'];
-      return invoke(provider.$get, provider);
+      // note: original versino does not provide provider as self (2nd argument)
+      // pg 366
+      var instance = instanceCache[name] = invoke(provider.$get, provider);
+      return instance;
     }
   }
   // invoke function by looking up items in $inject from the cache
