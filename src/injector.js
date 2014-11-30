@@ -19,13 +19,18 @@ function createInjector(modulesToLoad) {
         throw 'hasOwnProperty is not a valid constant name!';
       }
       cache[key] = value;
+    },
+    provider: function(key, provider) {
+      // invokes the provider $get, so it gets annotated as well
+      // note that provider becomes the 'this'
+      cache[key] = invoke(provider.$get, provider);
     }
   };
   // invoke function by looking up items in $inject from the cache
   function invoke(fn, self, locals) {
     // get the arguments for the fn by calling annotate.
-    // this will always return an array
-    // we then map through it and look up those keys to get values from the cache 
+    // which then looks up those args as keys in the cache
+    // and returns those key's values as an array
     // this new array is whats actually used as the arguments when we apply the fn
     var args = _.map(annotate(fn), function(token) {
       if(_.isString(token)) {

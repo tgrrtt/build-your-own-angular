@@ -13,12 +13,21 @@ function setupModuleLoader(window) {
     if (name === 'hasOwnProperty') {
       throw 'hasOwnProperty is not a valid module name';
     }
+
+    // allows us to easily invoke module components later,
+    // returns moduleInstance so we can chain registrations together
+    var invokeLater = function(method) {
+      return function() {
+        moduleInstance._invokeQueue.push([method, arguments]);
+        return moduleInstance;
+      };
+    };
+
     var moduleInstance = {
       name: name,
       requires: requires,
-      constant: function(key, value) {
-        moduleInstance._invokeQueue.push(['constant', [key, value]]);
-      },
+      constant: invokeLater('constant'),
+      provider: invokeLater('provider'),
       // essentially a task list to be run through when loaded
       _invokeQueue: []
     };
