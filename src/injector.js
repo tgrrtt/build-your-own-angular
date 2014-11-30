@@ -3,7 +3,8 @@
 'use strict';
 
 function createInjector(modulesToLoad) {
-  var cache = {};
+  var providerCache = {};
+  var instanceCache = {};
   var loadedModules = {};
   // used to parse out params from the function 
   var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
@@ -18,14 +19,26 @@ function createInjector(modulesToLoad) {
       if (key === 'hasOwnProperty') {
         throw 'hasOwnProperty is not a valid constant name!';
       }
-      cache[key] = value;
+      instanceCache[key] = value;
     },
     provider: function(key, provider) {
       // invokes the provider $get, so it gets annotated as well
       // note that provider becomes the 'this'
-      cache[key] = invoke(provider.$get, provider);
+      providerCache[key + 'Provider'] = provider; 
     }
   };
+
+  // gets things from the cache for us
+  // if its a provider, it will invoke it, and return what that function returns
+  // this means that if we never get it, or ask for it in another module, it wont get instantiated 
+  function getService(name) {
+    if (instanceCache.hasOwnProperty(name)) {
+      return instanceCache[name];
+    } else if (providerCache.hasOwnProperty(name + 'Provider')) {
+      var provider = providerCache[name + 'Provider'];
+      return invoke(provider.$get, provider);
+    }
+  }
   // invoke function by looking up items in $inject from the cache
   function invoke(fn, self, locals) {
     // get the arguments for the fn by calling annotate.
@@ -37,7 +50,7 @@ function createInjector(modulesToLoad) {
         // this lets us override the cache value with a value of our own
         return locals && locals.hasOwnProperty(token) ?
           locals[token] :
-          cache[token];
+          getService(token);
       } else {
         throw 'Incorrect injection token! Expected a string, got ' + (typeof token);
       }
@@ -93,11 +106,10 @@ function createInjector(modulesToLoad) {
   
   return {
     has: function(key) {
-      return cache.hasOwnProperty(key);
+      return instanceCache.hasOwnProperty(key) ||
+        providerCache.hasOwnProperty(key + 'Provider');
     },
-    get: function(key) {
-      return cache[key];
-    },
+    get: getService,
     invoke: invoke,
     annotate: annotate,
     instantiate: instantiate
